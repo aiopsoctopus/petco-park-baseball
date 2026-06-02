@@ -87,6 +87,34 @@ rightFoul.rotation.z = -Math.PI / 4;
 rightFoul.position.set(9.9, 0.02, 9.9);
 scene.add(rightFoul);
 
+// Western Metal Supply Building (left field corner)
+const wmsGeo = new THREE.BoxGeometry(4, 8, 4);
+const wmsMat = new THREE.MeshBasicMaterial({ color: 0x8B4513 }); // brick brown
+const wmsBuilding = new THREE.Mesh(wmsGeo, wmsMat);
+wmsBuilding.position.set(-26, 4, 10);
+scene.add(wmsBuilding);
+
+// WMS rooftop seating (flat top)
+const roofGeo = new THREE.BoxGeometry(4.5, 0.3, 4.5);
+const roofMat = new THREE.MeshBasicMaterial({ color: 0x555555 });
+const roof = new THREE.Mesh(roofGeo, roofMat);
+roof.position.set(-26, 8.15, 10);
+scene.add(roof);
+
+// Scoreboard (center field)
+const boardGeo = new THREE.BoxGeometry(8, 5, 0.5);
+const boardMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
+const scoreboard = new THREE.Mesh(boardGeo, boardMat);
+scoreboard.position.set(0, 4, -29);
+scene.add(scoreboard);
+
+// Scoreboard screen (gold)
+const screenGeo = new THREE.BoxGeometry(6.5, 3.5, 0.6);
+const screenMat = new THREE.MeshBasicMaterial({ color: 0xFEC325 });
+const screen = new THREE.Mesh(screenGeo, screenMat);
+screen.position.set(0, 4.2, -29);
+scene.add(screen);
+
 camera.position.set(0, 15, 20);
 camera.lookAt(0, 0, 0);
 
