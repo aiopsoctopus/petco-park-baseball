@@ -4,6 +4,7 @@ import { createAvatar } from './avatar.js';
 import { createUI } from './ui.js';
 import { createFieldingDrill } from './drill_fielding.js';
 import { createHittingDrill } from './drill_hitting.js';
+import { createBaseRunningDrill } from './drill_baserunning.js';
 import { createScoring } from './scoring.js';
 
 const scene = new THREE.Scene();
@@ -17,21 +18,23 @@ let activeDrill = null;
 
 // Drill selector buttons
 const hittingBtn = document.createElement('button');
-hittingBtn.textContent = 'Hitting Drill';
-hittingBtn.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%) translateX(-110px);padding:10px 20px;font-size:0.95em;font-weight:bold;background:#002D62;color:#FEC325;border:2px solid #FEC325;border-radius:8px;cursor:pointer;z-index:200;';
+hittingBtn.textContent = 'Hitting';
+hittingBtn.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%) translateX(-160px);padding:10px 20px;font-size:0.95em;font-weight:bold;background:#002D62;color:#FEC325;border:2px solid #FEC325;border-radius:8px;cursor:pointer;z-index:200;';
 document.body.appendChild(hittingBtn);
 
+const basesBtn = document.createElement('button');
+basesBtn.textContent = 'Base Running';
+basesBtn.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);padding:10px 20px;font-size:0.95em;font-weight:bold;background:#002D62;color:#FEC325;border:2px solid #FEC325;border-radius:8px;cursor:pointer;z-index:200;';
+document.body.appendChild(basesBtn);
+
 const fieldingBtn = document.createElement('button');
-fieldingBtn.textContent = 'Fielding Drill';
-fieldingBtn.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%) translateX(110px);padding:10px 20px;font-size:0.95em;font-weight:bold;background:#002D62;color:#FEC325;border:2px solid #FEC325;border-radius:8px;cursor:pointer;z-index:200;';
+fieldingBtn.textContent = 'Fielding';
+fieldingBtn.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%) translateX(160px);padding:10px 20px;font-size:0.95em;font-weight:bold;background:#002D62;color:#FEC325;border:2px solid #FEC325;border-radius:8px;cursor:pointer;z-index:200;';
 document.body.appendChild(fieldingBtn);
 
-hittingBtn.addEventListener('click', () => {
-  window.location.search = '?drill=hitting';
-});
-fieldingBtn.addEventListener('click', () => {
-  window.location.search = '?drill=fielding';
-});
+hittingBtn.addEventListener('click', () => { window.location.search = '?drill=hitting'; });
+basesBtn.addEventListener('click',   () => { window.location.search = '?drill=bases'; });
+fieldingBtn.addEventListener('click', () => { window.location.search = '?drill=fielding'; });
 
 const scoring = createScoring();
 scoring.load();
@@ -41,9 +44,9 @@ window.addEventListener('beforeunload', () => scoring.save());
 const params = new URLSearchParams(window.location.search);
 const drillParam = params.get('drill') || 'hitting';
 
-activeDrill = drillParam === 'fielding'
-  ? createFieldingDrill(scene, avatar, scoring)
-  : createHittingDrill(scene, scoring);
+activeDrill = drillParam === 'fielding'  ? createFieldingDrill(scene, avatar, scoring)
+           : drillParam === 'bases'     ? createBaseRunningDrill(scene, avatar, scoring)
+           : createHittingDrill(scene, scoring);
 
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
