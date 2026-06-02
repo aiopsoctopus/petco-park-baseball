@@ -2,12 +2,16 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { createAvatar } from './avatar.js';
 import { createUI } from './ui.js';
+import { createHittingDrill } from './drill_hitting.js';
+
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87CEEB);
 
 const { avatar, headMat, bodyMat } = createAvatar(scene);
 createUI(headMat, bodyMat);
+
+const drill = createHittingDrill(scene);
 
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -140,6 +144,7 @@ camera.lookAt(0, 0, 0);
 function animate() {
   requestAnimationFrame(animate);
   controls.update();
+  drill.update();
   renderer.render(scene, camera);
 }
 
