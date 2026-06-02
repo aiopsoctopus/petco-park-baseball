@@ -14,6 +14,11 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 
+controls.maxPolarAngle = Math.PI / 2.2; // prevents going underground
+controls.minDistance = 10;
+controls.maxDistance = 80;
+controls.target.set(0, 0, 0);
+
 // Infield dirt
 const dirtGeo = new THREE.CircleGeometry(8, 32);
 const dirtMat = new THREE.MeshLambertMaterial({ color: 0xC2956C });
