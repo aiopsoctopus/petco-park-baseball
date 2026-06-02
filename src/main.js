@@ -5,6 +5,7 @@ import { createUI } from './ui.js';
 import { createFieldingDrill } from './drill_fielding.js';
 import { createHittingDrill } from './drill_hitting.js';
 import { createBaseRunningDrill } from './drill_baserunning.js';
+import { createMainMenu } from './menu.js';
 import { createScoring } from './scoring.js';
 
 const scene = new THREE.Scene();
@@ -36,17 +37,23 @@ hittingBtn.addEventListener('click', () => { window.location.search = '?drill=hi
 basesBtn.addEventListener('click',   () => { window.location.search = '?drill=bases'; });
 fieldingBtn.addEventListener('click', () => { window.location.search = '?drill=fielding'; });
 
-const scoring = createScoring();
-scoring.load();
-window.addEventListener('beforeunload', () => scoring.save());
-
-// Read drill from URL and start correct one
 const params = new URLSearchParams(window.location.search);
-const drillParam = params.get('drill') || 'hitting';
+const drillParam = params.get('drill'); // null on main menu
 
-activeDrill = drillParam === 'fielding'  ? createFieldingDrill(scene, avatar, scoring)
-           : drillParam === 'bases'     ? createBaseRunningDrill(scene, avatar, scoring)
-           : createHittingDrill(scene, scoring);
+if (drillParam) {
+  const scoring = createScoring();
+  scoring.load();
+  window.addEventListener('beforeunload', () => scoring.save());
+  activeDrill = drillParam === 'fielding'  ? createFieldingDrill(scene, avatar, scoring)
+             : drillParam === 'bases'     ? createBaseRunningDrill(scene, avatar, scoring)
+             : createHittingDrill(scene, scoring);
+} else {
+  // Main menu — hide drill nav buttons, they're in the menu panel instead
+  hittingBtn.style.display = 'none';
+  basesBtn.style.display   = 'none';
+  fieldingBtn.style.display = 'none';
+  activeDrill = createMainMenu(scene, avatar);
+}
 
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -173,8 +180,16 @@ const sunLight = new THREE.DirectionalLight(0xFFD580, 1.2);
 sunLight.position.set(20, 30, 10);
 scene.add(sunLight);
 
-camera.position.set(0, 8, 12);
-camera.lookAt(0, 0, 0);
+if (drillParam) {
+  camera.position.set(0, 8, 12);
+  controls.target.set(0, 0, 0);
+  controls.minDistance = 10;
+} else {
+  // Angle slightly left so avatar sits in the right half of viewport
+  camera.position.set(-2, 2, 7.5);
+  controls.target.set(2.5, 1.2, 3);
+  controls.minDistance = 3;
+}
 
 function animate() {
   requestAnimationFrame(animate);
