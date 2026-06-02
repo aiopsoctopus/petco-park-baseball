@@ -1,15 +1,19 @@
 import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { createAvatar } from './avatar.js';
+import { createUI } from './ui.js';
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x87CEEB); // sky blue
+scene.background = new THREE.Color(0x87CEEB);
+
+const { avatar, headMat, bodyMat } = createAvatar(scene);
+createUI(headMat, bodyMat);
 
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.shadowMap.enabled = true;
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
-
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
@@ -130,7 +134,7 @@ const sunLight = new THREE.DirectionalLight(0xFFD580, 1.2);
 sunLight.position.set(20, 30, 10);
 scene.add(sunLight);
 
-camera.position.set(0, 15, 20);
+camera.position.set(0, 8, 12);
 camera.lookAt(0, 0, 0);
 
 function animate() {
