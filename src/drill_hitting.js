@@ -1,6 +1,6 @@
 import { createPhysicsWorld, createBall, pitch } from './ball.js';
 
-export function createHittingDrill(scene) {
+export function createHittingDrill(scene, scoring) {
   const world = createPhysicsWorld();
   const ball = createBall(scene, world);
   let swingWindow = false;
@@ -46,9 +46,11 @@ export function createHittingDrill(scene) {
   if (inZone) {
     score++;
     scoreDiv.textContent = `Hits: ${score}`;
-    showFeedback('CRACK! 💥', '#FEC325');
+    scoring.recordHit();
+    showFeedback('HIT! 💥', '#FEC325');
   } else {
-    showFeedback('Swing and a miss!', '#ff4444');
+    scoring.recordMiss();
+    showFeedback('Miss!', '#FF4444');
   }
   swingWindow = false;
   pitchInFlight = false;
@@ -78,8 +80,12 @@ export function createHittingDrill(scene) {
     ball.mesh.quaternion.copy(ball.body.quaternion);
     ball.shadow.position.set(ball.body.position.x, 0.02, ball.body.position.z);
 
-    // Reset if ball goes past home plate
+    // Reset if ball goes past home plate without a swing
     if (ball.body.position.z > 10) {
+      if (pitchInFlight) {
+        scoring.recordMiss();
+        showFeedback('Strike!', '#FF4444');
+      }
       pitchInFlight = false;
       swingWindow = false;
       pitchBtn.textContent = '⚾ Pitch!';

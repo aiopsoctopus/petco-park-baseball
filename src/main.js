@@ -4,6 +4,7 @@ import { createAvatar } from './avatar.js';
 import { createUI } from './ui.js';
 import { createFieldingDrill } from './drill_fielding.js';
 import { createHittingDrill } from './drill_hitting.js';
+import { createScoring } from './scoring.js';
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87CEEB);
@@ -32,12 +33,17 @@ fieldingBtn.addEventListener('click', () => {
   window.location.search = '?drill=fielding';
 });
 
+const scoring = createScoring();
+scoring.load();
+window.addEventListener('beforeunload', () => scoring.save());
+
 // Read drill from URL and start correct one
 const params = new URLSearchParams(window.location.search);
 const drillParam = params.get('drill') || 'hitting';
+
 activeDrill = drillParam === 'fielding'
-  ? createFieldingDrill(scene, avatar)
-  : createHittingDrill(scene);
+  ? createFieldingDrill(scene, avatar, scoring)
+  : createHittingDrill(scene, scoring);
 
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
