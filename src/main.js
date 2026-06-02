@@ -2,8 +2,8 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { createAvatar } from './avatar.js';
 import { createUI } from './ui.js';
+import { createFieldingDrill } from './drill_fielding.js';
 import { createHittingDrill } from './drill_hitting.js';
-
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87CEEB);
@@ -11,7 +11,33 @@ scene.background = new THREE.Color(0x87CEEB);
 const { avatar, headMat, bodyMat } = createAvatar(scene);
 createUI(headMat, bodyMat);
 
-const drill = createHittingDrill(scene);
+// Drill switcher
+let activeDrill = null;
+
+// Drill selector buttons
+const hittingBtn = document.createElement('button');
+hittingBtn.textContent = 'Hitting Drill';
+hittingBtn.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%) translateX(-110px);padding:10px 20px;font-size:0.95em;font-weight:bold;background:#002D62;color:#FEC325;border:2px solid #FEC325;border-radius:8px;cursor:pointer;z-index:200;';
+document.body.appendChild(hittingBtn);
+
+const fieldingBtn = document.createElement('button');
+fieldingBtn.textContent = 'Fielding Drill';
+fieldingBtn.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%) translateX(110px);padding:10px 20px;font-size:0.95em;font-weight:bold;background:#002D62;color:#FEC325;border:2px solid #FEC325;border-radius:8px;cursor:pointer;z-index:200;';
+document.body.appendChild(fieldingBtn);
+
+hittingBtn.addEventListener('click', () => {
+  window.location.search = '?drill=hitting';
+});
+fieldingBtn.addEventListener('click', () => {
+  window.location.search = '?drill=fielding';
+});
+
+// Read drill from URL and start correct one
+const params = new URLSearchParams(window.location.search);
+const drillParam = params.get('drill') || 'hitting';
+activeDrill = drillParam === 'fielding'
+  ? createFieldingDrill(scene, avatar)
+  : createHittingDrill(scene);
 
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -144,7 +170,7 @@ camera.lookAt(0, 0, 0);
 function animate() {
   requestAnimationFrame(animate);
   controls.update();
-  drill.update();
+if (activeDrill) activeDrill.update();
   renderer.render(scene, camera);
 }
 
