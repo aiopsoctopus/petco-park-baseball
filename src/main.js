@@ -8,6 +8,11 @@ const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
 // Infield dirt
 const dirtGeo = new THREE.CircleGeometry(8, 32);
 const dirtMat = new THREE.MeshBasicMaterial({ color: 0xC2956C });
@@ -50,11 +55,44 @@ const mound = new THREE.Mesh(moundGeo, moundMat);
 mound.position.set(0, 0.15, 0);
 scene.add(mound);
 
+// Outfield wall
+const wallShape = new THREE.RingGeometry(28, 29.5, 32, 1, 0, Math.PI);
+const wallMat = new THREE.MeshBasicMaterial({ color: 0x002D62, side: THREE.DoubleSide });
+const wall = new THREE.Mesh(wallShape, wallMat);
+wall.rotation.x = -Math.PI / 2;
+wall.position.y = 0.01;
+scene.add(wall);
+
+// Stands
+const standsShape = new THREE.RingGeometry(29.5, 38, 32, 1, 0, Math.PI);
+const standsMat = new THREE.MeshBasicMaterial({ color: 0x8B8B8B, side: THREE.DoubleSide });
+const stands = new THREE.Mesh(standsShape, standsMat);
+stands.rotation.x = -Math.PI / 2;
+stands.position.y = 0.01;
+scene.add(stands);
+
+// Foul lines
+const lineMat = new THREE.MeshBasicMaterial({ color: 0xFFFFFF });
+const lineGeo = new THREE.PlaneGeometry(0.15, 28);
+
+const leftFoul = new THREE.Mesh(lineGeo, lineMat);
+leftFoul.rotation.x = -Math.PI / 2;
+leftFoul.rotation.z = Math.PI / 4;
+leftFoul.position.set(-9.9, 0.02, 9.9);
+scene.add(leftFoul);
+
+const rightFoul = new THREE.Mesh(lineGeo, lineMat);
+rightFoul.rotation.x = -Math.PI / 2;
+rightFoul.rotation.z = -Math.PI / 4;
+rightFoul.position.set(9.9, 0.02, 9.9);
+scene.add(rightFoul);
+
 camera.position.set(0, 15, 20);
 camera.lookAt(0, 0, 0);
 
 function animate() {
   requestAnimationFrame(animate);
+  controls.update();
   renderer.render(scene, camera);
 }
 
