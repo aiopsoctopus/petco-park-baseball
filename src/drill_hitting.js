@@ -6,6 +6,7 @@ export function createHittingDrill(scene) {
   let swingWindow = false;
   let score = 0;
   let pitchInFlight = false;
+  
 
   // Score display
   const scoreDiv = document.createElement('div');
@@ -27,32 +28,35 @@ export function createHittingDrill(scene) {
   document.body.appendChild(pitchBtn);
 
   pitchBtn.addEventListener('click', () => {
-    if (!pitchInFlight) {
-      pitch(ball.body);
-      pitchInFlight = true;
-      swingWindow = true;
-      pitchBtn.textContent = '🏏 Swing! (Space)';
-    }
-  });
+  if (!pitchInFlight) {
+    const label = pitch(ball.body);
+    pitchInFlight = true;
+    swingWindow = true;
+    pitchBtn.textContent = `🏏 Swing! (Space) — ${label}`;
+  }
+});
 
   // Swing on spacebar
   window.addEventListener('keydown', e => {
     if (e.code === 'Space' && swingWindow) {
-      e.preventDefault();
-      const z = ball.body.position.z;
-      if (z > 2 && z < 7) {
-        score++;
-        scoreDiv.textContent = `Hits: ${score}`;
-        showFeedback('CRACK! 💥', '#FEC325');
-      } else {
-        showFeedback('Swing and a miss!', '#ff4444');
-      }
-      swingWindow = false;
-      pitchInFlight = false;
-      pitchBtn.textContent = '⚾ Pitch!';
-      ball.body.position.set(0, 1.5, -18);
-      ball.body.velocity.set(0, 0, 0);
-    }
+  e.preventDefault();
+  const z = ball.body.position.z;
+  const x = ball.body.position.x;
+  const inZone = z > 1 && z < 8 && Math.abs(x) < 2.5;
+  if (inZone) {
+    score++;
+    scoreDiv.textContent = `Hits: ${score}`;
+    showFeedback('CRACK! 💥', '#FEC325');
+  } else {
+    showFeedback('Swing and a miss!', '#ff4444');
+  }
+  swingWindow = false;
+  pitchInFlight = false;
+  pitchBtn.textContent = '⚾ Pitch!';
+  ball.body.position.set(0, 1.5, -18);
+  ball.body.velocity.set(0, 0, 0);
+  ball.shadow.position.set(ball.body.position.x, 0.02, ball.body.position.z);
+}
   });
 
   function showFeedback(msg, color) {
@@ -72,6 +76,7 @@ export function createHittingDrill(scene) {
     world.step(1 / 60);
     ball.mesh.position.copy(ball.body.position);
     ball.mesh.quaternion.copy(ball.body.quaternion);
+    ball.shadow.position.set(ball.body.position.x, 0.02, ball.body.position.z);
 
     // Reset if ball goes past home plate
     if (ball.body.position.z > 10) {
