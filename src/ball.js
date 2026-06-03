@@ -42,11 +42,12 @@ const PITCHES = {
   changeup:  { vx: 0,    vy: 0,    vz: 19, label: 'CHANGEUP 🎯' },
 };
 
-export function pitch(ballBody) {
+export function pitch(ballBody, speed = 26) {
+  const scale = speed / 26;
   const types = Object.values(PITCHES);
   const p = types[Math.floor(Math.random() * types.length)];
   ballBody.position.set(0, 1.5, -18);
-  ballBody.velocity.set(p.vx, p.vy, p.vz);
+  ballBody.velocity.set(p.vx * scale, p.vy * scale, p.vz * scale);
   ballBody.angularVelocity.set(0, 0, 0);
   return p.label;
 }
