@@ -28,38 +28,42 @@ export function createHittingDrill(scene, scoring) {
   document.body.appendChild(pitchBtn);
 
   pitchBtn.addEventListener('click', () => {
-  if (!pitchInFlight) {
-    const label = pitch(ball.body);
-    pitchInFlight = true;
-    swingWindow = true;
-    pitchBtn.textContent = `🏏 Swing! (Space) — ${label}`;
-  }
-});
-
-  // Swing on spacebar
-  window.addEventListener('keydown', e => {
-    if (e.code === 'Space' && swingWindow) {
-  e.preventDefault();
-  const z = ball.body.position.z;
-  const x = ball.body.position.x;
-  const inZone = z > 1 && z < 8 && Math.abs(x) < 2.5;
-  if (inZone) {
-    score++;
-    scoreDiv.textContent = `Hits: ${score}`;
-    scoring.recordHit();
-    showFeedback('HIT! 💥', '#FEC325');
-  } else {
-    scoring.recordMiss();
-    showFeedback('Miss!', '#FF4444');
-  }
-  swingWindow = false;
-  pitchInFlight = false;
-  pitchBtn.textContent = '⚾ Pitch!';
-  ball.body.position.set(0, 1.5, -18);
-  ball.body.velocity.set(0, 0, 0);
-  ball.shadow.position.set(ball.body.position.x, 0.02, ball.body.position.z);
-}
+    if (!pitchInFlight) {
+      const label = pitch(ball.body, scoring.getDifficulty().ballSpeed);
+      pitchInFlight = true;
+      swingWindow = true;
+      pitchBtn.textContent = `🏏 Swing! — ${label}`;
+    }
   });
+
+  function trySwing() {
+    if (!swingWindow) return;
+    const z = ball.body.position.z;
+    const x = ball.body.position.x;
+    const inZone = z > 1 && z < 8 && Math.abs(x) < 2.5;
+    if (inZone) {
+      score++;
+      scoreDiv.textContent = `Hits: ${score}`;
+      scoring.recordHit();
+      showFeedback('HIT! 💥', '#FEC325');
+    } else {
+      scoring.recordMiss();
+      showFeedback('Miss!', '#FF4444');
+    }
+    swingWindow = false;
+    pitchInFlight = false;
+    pitchBtn.textContent = '⚾ Pitch!';
+    ball.body.position.set(0, 1.5, -18);
+    ball.body.velocity.set(0, 0, 0);
+    ball.shadow.position.set(ball.body.position.x, 0.02, ball.body.position.z);
+  }
+
+  window.addEventListener('keydown', e => {
+    if (e.code === 'Space') { e.preventDefault(); trySwing(); }
+  });
+  window.addEventListener('touchstart', e => {
+    e.preventDefault(); trySwing();
+  }, { passive: false });
 
   function showFeedback(msg, color) {
     const div = document.createElement('div');

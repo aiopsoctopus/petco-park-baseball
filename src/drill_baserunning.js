@@ -112,14 +112,18 @@ export function createBaseRunningDrill(scene, avatar, scoring) {
   instrDiv.textContent = 'Press Space when close to a base to slide!';
   document.body.appendChild(instrDiv);
 
+  function handleTap() {
+    if (state === 'idle') startRun();
+    else if (state === 'running' && !slideUsed && runnerT > 0.65) triggerSlide();
+  }
+
   goBtn.addEventListener('click', startRun);
   window.addEventListener('keydown', e => {
-    if (e.code === 'Space') {
-      e.preventDefault();
-      if (state === 'idle') startRun();
-      else if (state === 'running' && !slideUsed && runnerT > 0.65) triggerSlide();
-    }
+    if (e.code === 'Space') { e.preventDefault(); handleTap(); }
   });
+  window.addEventListener('touchstart', e => {
+    e.preventDefault(); handleTap();
+  }, { passive: false });
 
   // ── Control flow ─────────────────────────────────────
 

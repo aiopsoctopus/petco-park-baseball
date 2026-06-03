@@ -47,7 +47,33 @@ export function createFieldingDrill(scene, avatar, scoring) {
   // Avatar movement
   const keys = {};
   window.addEventListener('keydown', e => { keys[e.code] = true; });
-  window.addEventListener('keyup', e => { keys[e.code] = false; });
+  window.addEventListener('keyup',   e => { keys[e.code] = false; });
+
+  // D-pad for touch / mouse
+  const PAD_DIRS = [
+    { key: 'ArrowUp',    icon: '↑', col: 1, row: 0 },
+    { key: 'ArrowLeft',  icon: '←', col: 0, row: 1 },
+    { key: 'ArrowRight', icon: '→', col: 2, row: 1 },
+    { key: 'ArrowDown',  icon: '↓', col: 1, row: 2 },
+  ];
+  const BTN = 52, GAP = 6;
+  const dpad = document.createElement('div');
+  dpad.style.cssText = `position:fixed;bottom:170px;right:20px;width:${(BTN+GAP)*3-GAP}px;height:${(BTN+GAP)*3-GAP}px;z-index:100;`;
+  PAD_DIRS.forEach(({ key, icon, col, row }) => {
+    const btn = document.createElement('button');
+    btn.textContent = icon;
+    btn.style.cssText = `position:absolute;left:${col*(BTN+GAP)}px;top:${row*(BTN+GAP)}px;
+      width:${BTN}px;height:${BTN}px;background:rgba(0,45,98,0.75);color:#FEC325;
+      border:2px solid rgba(254,195,37,0.55);border-radius:50%;font-size:1.3em;
+      cursor:pointer;touch-action:none;user-select:none;`;
+    btn.addEventListener('touchstart', e => { e.preventDefault(); keys[key] = true; },  { passive: false });
+    btn.addEventListener('touchend',   e => { e.preventDefault(); keys[key] = false; }, { passive: false });
+    btn.addEventListener('mousedown',  () => keys[key] = true);
+    btn.addEventListener('mouseup',    () => keys[key] = false);
+    btn.addEventListener('mouseleave', () => keys[key] = false);
+    dpad.appendChild(btn);
+  });
+  document.body.appendChild(dpad);
 
   function launchFlyBall() {
     if (ballInFlight) return;

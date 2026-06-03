@@ -41,7 +41,7 @@ const params = new URLSearchParams(window.location.search);
 const drillParam = params.get('drill'); // null on main menu
 
 if (drillParam) {
-  const scoring = createScoring();
+  const scoring = createScoring(drillParam);
   scoring.load();
   window.addEventListener('beforeunload', () => scoring.save());
   activeDrill = drillParam === 'fielding'  ? createFieldingDrill(scene, avatar, scoring)
