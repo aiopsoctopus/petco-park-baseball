@@ -247,32 +247,32 @@ export function buildPark(scene, renderer) {
 
 // ── Illustrated backdrops ─────────────────────────────────────────
 function buildBackdrops(scene) {
-  // Large curved backdrop behind the outfield wall — field panorama image
-  const fieldTex = loadTex('/textures/park_field.jpg');
-  const backdrop = new THREE.Mesh(
-    new THREE.CylinderGeometry(70, 70, 40, 64, 1, true, Math.PI / 2, Math.PI),
-    new THREE.MeshBasicMaterial({ map: fieldTex, side: THREE.BackSide })
-  );
-  backdrop.position.y = 12;
-  scene.add(backdrop);
-
-  // Crowd image textured onto the upper stands geometry
+  // Crowd image — wide flat plane across the back of the stands
   const crowdTex = loadTex('/textures/park_crowd.jpg');
-  const crowdBand = new THREE.Mesh(
-    new THREE.CylinderGeometry(45, 38, 10, 96, 1, true, Math.PI / 2, Math.PI),
-    new THREE.MeshBasicMaterial({ map: crowdTex, side: THREE.DoubleSide })
+  const crowdPlane = new THREE.Mesh(
+    new THREE.PlaneGeometry(80, 22),
+    new THREE.MeshBasicMaterial({ map: crowdTex })
   );
-  crowdBand.position.y = 14;
-  scene.add(crowdBand);
+  crowdPlane.position.set(0, 14, -48);
+  scene.add(crowdPlane);
 
-  // Exterior image on the back wall behind left field (WMS building area)
+  // Field panorama — sky/background behind everything
+  const fieldTex = loadTex('/textures/park_field.jpg');
+  const fieldPlane = new THREE.Mesh(
+    new THREE.PlaneGeometry(120, 40),
+    new THREE.MeshBasicMaterial({ map: fieldTex })
+  );
+  fieldPlane.position.set(0, 16, -70);
+  scene.add(fieldPlane);
+
+  // Exterior — left field corner behind WMS building
   const extTex = loadTex('/textures/park_exterior.jpg');
   const extPlane = new THREE.Mesh(
-    new THREE.PlaneGeometry(30, 18),
+    new THREE.PlaneGeometry(28, 16),
     new THREE.MeshBasicMaterial({ map: extTex })
   );
-  extPlane.position.set(-38, 9, -5);
-  extPlane.rotation.y = Math.PI / 2.5;
+  extPlane.position.set(-42, 8, 0);
+  extPlane.rotation.y = Math.PI / 2;
   scene.add(extPlane);
 }
 
