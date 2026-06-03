@@ -88,6 +88,12 @@ export function createMainMenu(scene, avatarObj) {
   `;
 
   panel.innerHTML = `
+    <img src="/textures/avatar.jpg" alt="Your player" style="
+      width:110px;height:110px;object-fit:cover;object-position:top;
+      border-radius:50%;border:3px solid #FEC325;
+      box-shadow:0 4px 20px rgba(0,0,0,0.5);margin-bottom:14px;display:block;
+    "/>
+
     <div style="font-size:0.7em;letter-spacing:3px;text-transform:uppercase;
                 color:#FEC325;margin-bottom:8px;">⚾ Petco Park</div>
 
