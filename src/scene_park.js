@@ -16,8 +16,14 @@ export function buildPark(scene, renderer) {
   renderer.toneMappingExposure = 1.15;
   renderer.outputColorSpace  = THREE.SRGBColorSpace;
   renderer.shadowMap.type    = THREE.PCFSoftShadowMap;
-  scene.fog = new THREE.FogExp2(0x8EC8E8, 0.005);
-  scene.background = new THREE.Color(0x5BB8E8);
+
+  // Use the illustrated field panorama as the scene background
+  const bgTex = loadTex('/textures/park_field.jpg');
+  bgTex.mapping = THREE.EquirectangularReflectionMapping;
+  scene.background = bgTex;
+
+  // Warm fog that matches the image's golden tones — blends 3D into the backdrop
+  scene.fog = new THREE.FogExp2(0xC8A86B, 0.008);
 
   // ── Lighting ──────────────────────────────────────────────────
   // Warm sky / green ground hemisphere
@@ -247,31 +253,22 @@ export function buildPark(scene, renderer) {
 
 // ── Illustrated backdrops ─────────────────────────────────────────
 function buildBackdrops(scene) {
-  // Crowd image — wide flat plane across the back of the stands
+  // Crowd — sits just behind the 3D upper deck, blending illustrated fans with geometry
   const crowdTex = loadTex('/textures/park_crowd.jpg');
   const crowdPlane = new THREE.Mesh(
-    new THREE.PlaneGeometry(80, 22),
-    new THREE.MeshBasicMaterial({ map: crowdTex })
+    new THREE.PlaneGeometry(90, 28),
+    new THREE.MeshBasicMaterial({ map: crowdTex, transparent: true, opacity: 0.92 })
   );
-  crowdPlane.position.set(0, 14, -48);
+  crowdPlane.position.set(0, 17, -52);
   scene.add(crowdPlane);
 
-  // Field panorama — sky/background behind everything
-  const fieldTex = loadTex('/textures/park_field.jpg');
-  const fieldPlane = new THREE.Mesh(
-    new THREE.PlaneGeometry(120, 40),
-    new THREE.MeshBasicMaterial({ map: fieldTex })
-  );
-  fieldPlane.position.set(0, 16, -70);
-  scene.add(fieldPlane);
-
-  // Exterior — left field corner behind WMS building
+  // Exterior — left field wall, visible behind WMS building
   const extTex = loadTex('/textures/park_exterior.jpg');
   const extPlane = new THREE.Mesh(
-    new THREE.PlaneGeometry(28, 16),
-    new THREE.MeshBasicMaterial({ map: extTex })
+    new THREE.PlaneGeometry(30, 18),
+    new THREE.MeshBasicMaterial({ map: extTex, transparent: true, opacity: 0.88 })
   );
-  extPlane.position.set(-42, 8, 0);
+  extPlane.position.set(-44, 9, -2);
   extPlane.rotation.y = Math.PI / 2;
   scene.add(extPlane);
 }
