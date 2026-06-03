@@ -316,69 +316,70 @@ function buildPitcher(scene) {
 
 // ── Crowd ─────────────────────────────────────────────────────────
 function buildCrowd(scene) {
-  // Crowd fans as small capsule-like figures seated in the stands
-  // Distributed across the seating band arc (π radians, from right to left foul line)
-  const FAN_COLORS = [0x002D62, 0xFEC325, 0xFFFFFF, 0xC8102E, 0x1A3A8F, 0xFFA500];
-  const rng = (seed) => {
-    // Simple deterministic pseudo-random so crowd is consistent
-    let x = Math.sin(seed) * 43758.5453;
-    return x - Math.floor(x);
-  };
+  const FAN_COLORS  = [0x002D62, 0xFEC325, 0xFFFFFF, 0xC8102E, 0x1A3A8F, 0xFFA500];
+  const SKIN_TONES  = [0xF1C27D, 0xC68642, 0x8D5524, 0xFFDBAC, 0xD4A574];
 
-  let fanIdx = 0;
-  // Three seating tiers
+  const rng = seed => { const x = Math.sin(seed) * 43758.5453; return x - Math.floor(x); };
+
+  // Each tier: r = arc radius, y = seat height, rows, fansPerRow
   const TIERS = [
-    { r: 31, y: 2.2,  rows: 2, fansPerRow: 42 },
-    { r: 36, y: 5.8,  rows: 2, fansPerRow: 52 },
-    { r: 42, y: 11.0, rows: 2, fansPerRow: 60 },
+    { r: 30.5, y: 1.8,  rows: 3, fansPerRow: 44 },
+    { r: 36,   y: 6.2,  rows: 3, fansPerRow: 54 },
+    { r: 42,   y: 11.5, rows: 2, fansPerRow: 62 },
   ];
 
+  let idx = 0;
   for (const tier of TIERS) {
     for (let row = 0; row < tier.rows; row++) {
-      const r = tier.r + row * 1.4;
-      const y = tier.y + row * 1.1;
+      const r = tier.r + row * 1.5;
+      // y rises with radius to follow the bowl slope: ~0.7 units per 1.5r step
+      const y = tier.y + row * 0.75;
+
       for (let f = 0; f < tier.fansPerRow; f++) {
-        const t = f / (tier.fansPerRow - 1); // 0..1
-        const angle = Math.PI / 2 + t * Math.PI; // right foul → left foul
-        const x = r * Math.cos(angle);
-        const z = r * Math.sin(angle);
+        const t     = f / (tier.fansPerRow - 1);
+        const angle = Math.PI / 2 + t * Math.PI; // right → left foul line
 
-        const color = FAN_COLORS[Math.floor(rng(fanIdx * 7.3) * FAN_COLORS.length)];
+        const fan = new THREE.Group();
 
-        // Body (small cylinder)
+        // Body
+        const bodyColor = FAN_COLORS[Math.floor(rng(idx * 7.3) * FAN_COLORS.length)];
         const body = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.22, 0.22, 0.55, 6), toon(color)
+          new THREE.CylinderGeometry(0.2, 0.2, 0.5, 6),
+          toon(bodyColor)
         );
-        body.position.set(x, y, z);
-        // Face toward field (inward)
-        body.rotation.y = angle + Math.PI;
-        scene.add(body);
+        body.position.y = 0.25; // sits on group origin
+        fan.add(body);
 
-        // Head (small sphere)
-        const skinTones = [0xF1C27D, 0xC68642, 0x8D5524, 0xFFDBAC, 0xD4A574];
-        const skinColor = skinTones[Math.floor(rng(fanIdx * 3.7) * skinTones.length)];
+        // Head
+        const skinColor = SKIN_TONES[Math.floor(rng(idx * 3.7) * SKIN_TONES.length)];
         const head = new THREE.Mesh(
-          new THREE.SphereGeometry(0.18, 8, 8), toon(skinColor)
+          new THREE.SphereGeometry(0.17, 8, 8),
+          toon(skinColor)
         );
-        head.position.set(x, y + 0.42, z);
-        scene.add(head);
+        head.position.y = 0.67; // on top of body
+        fan.add(head);
 
-        // Occasional raised arm (cheering)
-        if (rng(fanIdx * 1.9) > 0.82) {
+        // Occasional raised arm
+        if (rng(idx * 1.9) > 0.8) {
           const arm = new THREE.Mesh(
-            new THREE.CylinderGeometry(0.06, 0.06, 0.4, 6), toon(color)
+            new THREE.CylinderGeometry(0.055, 0.055, 0.38, 6),
+            toon(bodyColor)
           );
-          const armAngle = angle + Math.PI;
-          arm.position.set(
-            x + Math.cos(armAngle) * 0.18,
-            y + 0.65,
-            z + Math.sin(armAngle) * 0.18
-          );
-          arm.rotation.z = (rng(fanIdx) > 0.5 ? 1 : -1) * Math.PI / 5;
-          scene.add(arm);
+          arm.position.set(rng(idx) > 0.5 ? 0.22 : -0.22, 0.65, 0);
+          arm.rotation.z = (rng(idx) > 0.5 ? 1 : -1) * Math.PI / 4;
+          fan.add(arm);
         }
 
-        fanIdx++;
+        // Place group: x/z on arc, y = seat height, face inward toward field
+        fan.position.set(
+          r * Math.cos(angle),
+          y,
+          r * Math.sin(angle)
+        );
+        fan.rotation.y = angle + Math.PI; // face toward center
+
+        scene.add(fan);
+        idx++;
       }
     }
   }
