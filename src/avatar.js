@@ -37,22 +37,87 @@ export function createAvatar(scene) {
   rightLeg.position.set(0.22, -0.15, 0);
   avatar.add(rightLeg);
 
-  // Arms
+  // Arms — wrapped in pivot groups so they rotate naturally from the shoulder
   const armGeo = new THREE.CylinderGeometry(0.12, 0.1, 0.9, 8);
 
+  const leftArmPivot = new THREE.Group();
+  leftArmPivot.position.set(-0.65, 0.85, 0);
   const leftArm = new THREE.Mesh(armGeo, bodyMat);
-  leftArm.position.set(-0.65, 0.6, 0);
-  leftArm.rotation.z = Math.PI / 6;
-  avatar.add(leftArm);
+  leftArm.position.y = -0.45;
+  leftArmPivot.add(leftArm);
+  leftArmPivot.rotation.z = Math.PI / 6;
+  avatar.add(leftArmPivot);
 
+  const rightArmPivot = new THREE.Group();
+  rightArmPivot.position.set(0.65, 0.85, 0);
   const rightArm = new THREE.Mesh(armGeo, bodyMat);
-  rightArm.position.set(0.65, 0.6, 0);
-  rightArm.rotation.z = -Math.PI / 6;
-  avatar.add(rightArm);
+  rightArm.position.y = -0.45;
+  rightArmPivot.add(rightArm);
+  rightArmPivot.rotation.z = -Math.PI / 6;
+  avatar.add(rightArmPivot);
 
   // Place on field
   avatar.position.set(0, 0.6, 3);
   scene.add(avatar);
 
-  return { avatar, headMat, bodyMat };
+  // ── ANIMATION STATE ──
+  let anim = null; // { type, progress, duration }
+
+  // Idle resting rotations
+  const REST_LEFT_Z  =  Math.PI / 6;
+  const REST_RIGHT_Z = -Math.PI / 6;
+  const REST_BODY_X  = 0;
+  const REST_BODY_Z  = 0;
+
+  /**
+   * Trigger a named animation on the avatar.
+   * type: 'swing' | 'catch' | 'slide'
+   */
+  function playAnimation(type) {
+    anim = { type, progress: 0, duration: type === 'swing' ? 0.35 : type === 'catch' ? 0.4 : 0.5 };
+  }
+
+  /**
+   * Call this every frame from the drill's update() loop.
+   * dt: seconds since last frame (pass 1/60 if not tracking delta)
+   */
+  function updateAnimation(dt = 1 / 60) {
+    if (!anim) return;
+    anim.progress = Math.min(anim.progress + dt / anim.duration, 1);
+    const t = anim.progress;
+    // Ease in-out
+    const ease = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+
+    if (anim.type === 'swing') {
+      // Arms swing forward across body — classic batting motion
+      leftArmPivot.rotation.z  = REST_LEFT_Z  + ease * (-Math.PI * 0.9);
+      rightArmPivot.rotation.z = REST_RIGHT_Z + ease * (-Math.PI * 0.9);
+      leftArmPivot.rotation.x  = ease * (-Math.PI / 4);
+      rightArmPivot.rotation.x = ease * (-Math.PI / 4);
+      body.rotation.y = ease * (Math.PI / 3); // torso twist
+    } else if (anim.type === 'catch') {
+      // Both arms raise up above head
+      leftArmPivot.rotation.z  = REST_LEFT_Z  + ease * (-Math.PI * 0.7);
+      rightArmPivot.rotation.z = REST_RIGHT_Z + ease * ( Math.PI * 0.7);
+      leftArmPivot.rotation.x  = ease * (-Math.PI / 2);
+      rightArmPivot.rotation.x = ease * (-Math.PI / 2);
+    } else if (anim.type === 'slide') {
+      // Body tilts forward, legs angle back
+      body.rotation.x  = ease * (Math.PI / 3);
+      leftLeg.rotation.x  = ease * (Math.PI / 4);
+      rightLeg.rotation.x = ease * (Math.PI / 4);
+    }
+
+    // Return to rest after animation completes
+    if (anim.progress >= 1) {
+      leftArmPivot.rotation.set(0, 0, REST_LEFT_Z);
+      rightArmPivot.rotation.set(0, 0, REST_RIGHT_Z);
+      body.rotation.set(REST_BODY_X, 0, REST_BODY_Z);
+      leftLeg.rotation.set(0, 0, 0);
+      rightLeg.rotation.set(0, 0, 0);
+      anim = null;
+    }
+  }
+
+  return { avatar, headMat, bodyMat, playAnimation, updateAnimation };
 }

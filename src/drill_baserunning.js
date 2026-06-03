@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 
-export function createBaseRunningDrill(scene, avatar, scoring) {
+export function createBaseRunningDrill(scene, avatarObj, scoring) {
+  const avatar = avatarObj ? avatarObj.avatar : null;
   // Matches base positions in main.js
   const BASES = [
     new THREE.Vector3(0, 0.6, 5),   // home
@@ -177,6 +178,7 @@ export function createBaseRunningDrill(scene, avatar, scoring) {
   function triggerSlide() {
     slideUsed    = true;
     slideApplied = true;
+    if (avatarObj) avatarObj.playAnimation('slide');
     if (avatar) avatar.scale.set(1.3, 0.35, 1);
     showFeedback('Slide! 🏃', '#FEC325');
   }
@@ -254,6 +256,7 @@ export function createBaseRunningDrill(scene, avatar, scoring) {
     const dt = lastTime ? Math.min((now - lastTime) / 1000, 0.05) : 1 / 60;
     lastTime = now;
 
+    if (avatarObj) avatarObj.updateAnimation(dt);
     if (state !== 'running' && state !== 'slowmo') return;
 
     const scaled = dt * slowFactor;

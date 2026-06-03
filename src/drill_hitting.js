@@ -1,6 +1,6 @@
 import { createPhysicsWorld, createBall, pitch } from './ball.js';
 
-export function createHittingDrill(scene, scoring) {
+export function createHittingDrill(scene, scoring, avatarObj) {
   const world = createPhysicsWorld();
   const ball = createBall(scene, world);
   let swingWindow = false;
@@ -38,6 +38,7 @@ export function createHittingDrill(scene, scoring) {
 
   function trySwing() {
     if (!swingWindow) return;
+    if (avatarObj) avatarObj.playAnimation('swing');
     const z = ball.body.position.z;
     const x = ball.body.position.x;
     const inZone = z > 1 && z < 8 && Math.abs(x) < 2.5;
@@ -80,6 +81,7 @@ export function createHittingDrill(scene, scoring) {
 
   function update() {
     world.step(1 / 60);
+    if (avatarObj) avatarObj.updateAnimation();
     ball.mesh.position.copy(ball.body.position);
     ball.mesh.quaternion.copy(ball.body.quaternion);
     ball.shadow.position.set(ball.body.position.x, 0.02, ball.body.position.z);

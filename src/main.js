@@ -12,7 +12,8 @@ import { buildPark } from './scene_park.js';
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87CEEB);
 
-const { avatar, headMat, bodyMat } = createAvatar(scene);
+const avatarResult = createAvatar(scene);
+const { avatar, headMat, bodyMat } = avatarResult;
 createUI(headMat, bodyMat);
 
 // Drill switcher
@@ -45,15 +46,15 @@ if (drillParam) {
   const scoring = createScoring(drillParam);
   scoring.load();
   window.addEventListener('beforeunload', () => scoring.save());
-  activeDrill = drillParam === 'fielding'  ? createFieldingDrill(scene, avatar, scoring)
-             : drillParam === 'bases'     ? createBaseRunningDrill(scene, avatar, scoring)
-             : createHittingDrill(scene, scoring);
+  activeDrill = drillParam === 'fielding'  ? createFieldingDrill(scene, avatarResult, scoring)
+             : drillParam === 'bases'     ? createBaseRunningDrill(scene, avatarResult, scoring)
+             : createHittingDrill(scene, scoring, avatarResult);
 } else {
   // Main menu — hide drill nav buttons, they're in the menu panel instead
   hittingBtn.style.display = 'none';
   basesBtn.style.display   = 'none';
   fieldingBtn.style.display = 'none';
-  activeDrill = createMainMenu(scene, avatar);
+  activeDrill = createMainMenu(scene, avatarResult);
 }
 
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);

@@ -2,7 +2,8 @@ import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 import { createPhysicsWorld } from './ball.js';
 
-export function createFieldingDrill(scene, avatar, scoring) {
+export function createFieldingDrill(scene, avatarObj, scoring) {
+  const avatar = avatarObj ? avatarObj.avatar : null;
   const world = createPhysicsWorld();
   let score = 0;
   let ballInFlight = false;
@@ -104,6 +105,7 @@ export function createFieldingDrill(scene, avatar, scoring) {
 
   function update() {
     world.step(1 / 60);
+    if (avatarObj) avatarObj.updateAnimation();
 
     if (avatar) {
       const speed = 0.08;
@@ -125,6 +127,7 @@ export function createFieldingDrill(scene, avatar, scoring) {
         score++;
         scoreDiv.textContent = 'Catches: ' + score;
         scoring.recordHit();
+        if (avatarObj) avatarObj.playAnimation('catch');
         showFeedback('CAUGHT IT!', '#FEC325');
         resetBall();
       }
