@@ -227,6 +227,161 @@ export function buildPark(scene, renderer) {
   );
   battersEyeTrim.position.set(0, 3, -28);
   scene.add(battersEyeTrim);
+
+  // ── Pitcher character ─────────────────────────────────────────
+  buildPitcher(scene);
+
+  // ── Crowd ─────────────────────────────────────────────────────
+  buildCrowd(scene);
+}
+
+// ── Pitcher ───────────────────────────────────────────────────────
+function buildPitcher(scene) {
+  const pitcher = new THREE.Group();
+
+  // Body
+  const body = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.38, 0.3, 1.0, 8), toon(0x002D62)
+  );
+  body.position.y = 0.5;
+  pitcher.add(body);
+
+  // Head
+  const head = new THREE.Mesh(
+    new THREE.SphereGeometry(0.3, 16, 16), toon(0xC68642)
+  );
+  head.position.y = 1.3;
+  pitcher.add(head);
+
+  // Helmet
+  const helmet = new THREE.Mesh(
+    new THREE.SphereGeometry(0.32, 16, 16, 0, Math.PI * 2, 0, Math.PI / 1.8), toon(0x002D62)
+  );
+  helmet.position.y = 1.3;
+  pitcher.add(helmet);
+
+  // Glove arm (raised, ready to pitch)
+  const gloveArm = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.1, 0.09, 0.75, 8), toon(0xC68642)
+  );
+  gloveArm.position.set(-0.5, 0.65, 0);
+  gloveArm.rotation.z = Math.PI / 3;
+  pitcher.add(gloveArm);
+
+  // Glove
+  const glove = new THREE.Mesh(
+    new THREE.SphereGeometry(0.18, 10, 10), toon(0x7A3A10)
+  );
+  glove.position.set(-0.78, 1.05, 0);
+  pitcher.add(glove);
+
+  // Throwing arm (windup position — extended back)
+  const throwArm = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.1, 0.09, 0.75, 8), toon(0x002D62)
+  );
+  throwArm.position.set(0.5, 0.7, 0.2);
+  throwArm.rotation.z = -Math.PI / 4;
+  throwArm.rotation.x = -Math.PI / 5;
+  pitcher.add(throwArm);
+
+  // Legs
+  const legGeo = new THREE.CylinderGeometry(0.13, 0.11, 0.8, 8);
+  const leftLeg = new THREE.Mesh(legGeo, toon(0xFFFFFF));
+  leftLeg.position.set(-0.18, -0.1, 0);
+  pitcher.add(leftLeg);
+
+  // Kick leg (front leg raised slightly — windup)
+  const kickLeg = new THREE.Mesh(legGeo, toon(0xFFFFFF));
+  kickLeg.position.set(0.18, -0.05, -0.2);
+  kickLeg.rotation.x = -Math.PI / 8;
+  pitcher.add(kickLeg);
+
+  // Place on mound, facing home plate (z+)
+  pitcher.position.set(0, 0.58, 0);
+  pitcher.rotation.y = Math.PI; // face home plate
+  pitcher.castShadow = true;
+  scene.add(pitcher);
+
+  // Gentle idle sway animation stored on the group
+  pitcher.userData.idleTime = 0;
+  pitcher.userData.animate = (dt) => {
+    pitcher.userData.idleTime += dt;
+    const sway = Math.sin(pitcher.userData.idleTime * 1.2) * 0.015;
+    pitcher.rotation.z = sway;
+    glove.position.y = 1.05 + Math.sin(pitcher.userData.idleTime * 1.8) * 0.04;
+  };
+
+  return pitcher;
+}
+
+// ── Crowd ─────────────────────────────────────────────────────────
+function buildCrowd(scene) {
+  // Crowd fans as small capsule-like figures seated in the stands
+  // Distributed across the seating band arc (π radians, from right to left foul line)
+  const FAN_COLORS = [0x002D62, 0xFEC325, 0xFFFFFF, 0xC8102E, 0x1A3A8F, 0xFFA500];
+  const rng = (seed) => {
+    // Simple deterministic pseudo-random so crowd is consistent
+    let x = Math.sin(seed) * 43758.5453;
+    return x - Math.floor(x);
+  };
+
+  let fanIdx = 0;
+  // Three seating tiers
+  const TIERS = [
+    { r: 31, y: 2.2,  rows: 2, fansPerRow: 42 },
+    { r: 36, y: 5.8,  rows: 2, fansPerRow: 52 },
+    { r: 42, y: 11.0, rows: 2, fansPerRow: 60 },
+  ];
+
+  for (const tier of TIERS) {
+    for (let row = 0; row < tier.rows; row++) {
+      const r = tier.r + row * 1.4;
+      const y = tier.y + row * 1.1;
+      for (let f = 0; f < tier.fansPerRow; f++) {
+        const t = f / (tier.fansPerRow - 1); // 0..1
+        const angle = Math.PI / 2 + t * Math.PI; // right foul → left foul
+        const x = r * Math.cos(angle);
+        const z = r * Math.sin(angle);
+
+        const color = FAN_COLORS[Math.floor(rng(fanIdx * 7.3) * FAN_COLORS.length)];
+
+        // Body (small cylinder)
+        const body = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.22, 0.22, 0.55, 6), toon(color)
+        );
+        body.position.set(x, y, z);
+        // Face toward field (inward)
+        body.rotation.y = angle + Math.PI;
+        scene.add(body);
+
+        // Head (small sphere)
+        const skinTones = [0xF1C27D, 0xC68642, 0x8D5524, 0xFFDBAC, 0xD4A574];
+        const skinColor = skinTones[Math.floor(rng(fanIdx * 3.7) * skinTones.length)];
+        const head = new THREE.Mesh(
+          new THREE.SphereGeometry(0.18, 8, 8), toon(skinColor)
+        );
+        head.position.set(x, y + 0.42, z);
+        scene.add(head);
+
+        // Occasional raised arm (cheering)
+        if (rng(fanIdx * 1.9) > 0.82) {
+          const arm = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.06, 0.06, 0.4, 6), toon(color)
+          );
+          const armAngle = angle + Math.PI;
+          arm.position.set(
+            x + Math.cos(armAngle) * 0.18,
+            y + 0.65,
+            z + Math.sin(armAngle) * 0.18
+          );
+          arm.rotation.z = (rng(fanIdx) > 0.5 ? 1 : -1) * Math.PI / 5;
+          scene.add(arm);
+        }
+
+        fanIdx++;
+      }
+    }
+  }
 }
 
 // ── Light tower helper ────────────────────────────────────────────

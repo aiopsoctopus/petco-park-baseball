@@ -7,7 +7,8 @@ const BADGE_DEFS = [
   { id: 'best_10',    icon: '🏆', label: 'Streak of 10' },
 ];
 
-export function createMainMenu(scene, avatar) {
+export function createMainMenu(scene, avatarObj) {
+  const avatar = avatarObj ? avatarObj.avatar : null;
   if (avatar) avatar.position.set(2.5, 0.6, 3);
 
   // Aggregate stats from per-drill keys
